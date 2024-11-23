@@ -1,4 +1,8 @@
-def is_valid(point: tuple[int, int], rows: int, cols: int) -> bool:
+"""
+A* searching algorithm"""
+import math
+
+def is_in_grid(point: tuple[int, int], rows: int, cols: int) -> bool:
     """
     Checks if a cell is within the grid boundaries.
 
@@ -7,11 +11,20 @@ def is_valid(point: tuple[int, int], rows: int, cols: int) -> bool:
     :param cols: number of columns
 
     :return: True if the cell is within the grid boundaries, False otherwise
+
+    >>> is_in_gird((1, 1), 3, 3)
+    True
+    >>> is_in_gird((3, 3), 3, 3)
+    False
+    >>> is_in_gird((-1, 2), 3, 3)
+    False
+    >>> is_in_gird((2, 2), 3, 3)
+    True
     """
-    # TODO: add doctests to all functions
+    row, col = point
+    return 0 <= row < rows and 0 <= col < cols
 
-
-def is_destination(point: tuple[int, int], dest):
+def is_destination(point: tuple[int, int], dest: tuple[int, int]) -> bool:
     """
     Checks if a cell is the destination.
 
@@ -19,20 +32,40 @@ def is_destination(point: tuple[int, int], dest):
     :param dest: (row, col) - the destination cell
 
     :return: True if the cell is the destination cell, False otherwise
+
+    >>> is_destination((2, 3), (2, 3))
+    True
+    >>> is_destination((1, 2), (2, 3))
+    False
+    >>> is_destination((0, 0), (0, 0))
+    True
+    >>> is_destination((3, 4), (2, 3))
+    False
     """
+    return point == dest
 
-
-def calculate_h_value(point: tuple[int, int], dest):
+def calculate_h_value(point: tuple[int, int], dest: tuple[int, int]) -> float:
     """
     Calculates the heuristic value (Euclidean distance) from a cell to the destination.
 
-    Parameters:
-        dest (list of int): Coordinates of the destination [row, col].
+    :param point: (row, col) - the current cell
+    :param dest: (row, col) - the destination cell
 
-    Returns:
-        float: Heuristic value (distance to the destination).
+    :return: Heuristic value (Euclidean distance to the destination)
+
+    >>> calculate_h_value((0, 0), (3, 4))
+    5.0
+    >>> calculate_h_value((1, 2), (2, 3))
+    1.4142135623730951
+    >>> calculate_h_value((0, 0), (0, 0))
+    0.0
+    >>> calculate_h_value((3, 3), (0, 0))
+    4.242640687119285
     """
-    # TODO: rewrite documentstion
+    row, col = point
+    dest_row, dest_col = dest
+    return math.sqrt((row - dest_row) ** 2 + (col - dest_col) ** 2)
+
 
 
 def trace_path(cell_details, dest):
@@ -54,3 +87,8 @@ def a_star_search(grid, src, dest):
         src (list of int): Coordinates of the source [row, col].
         dest (list of int): Coordinates of the destination [row, col].
     """
+
+
+if __name__ == '__main__':
+    import doctest
+    print(doctest.testmod())
