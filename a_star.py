@@ -54,17 +54,17 @@ def calculate_h_value(point: tuple[int, int], dest: tuple[int, int]) -> float:
     :return: Heuristic value (Euclidean distance to the destination)
 
     >>> calculate_h_value((0, 0), (3, 4))
-    5.0
+    7
     >>> calculate_h_value((1, 2), (2, 3))
-    1.4142135623730951
+    2
     >>> calculate_h_value((0, 0), (0, 0))
-    0.0
+    0
     >>> calculate_h_value((3, 3), (0, 0))
-    4.242640687119285
+    6
     """
     row, col = point
     dest_row, dest_col = dest
-    return math.sqrt((row - dest_row) ** 2 + (col - dest_col) ** 2)
+    return abs(row - dest_row) + abs(col - dest_col)
 
 
 
