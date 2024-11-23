@@ -43,6 +43,19 @@ def trace_path(cell_details, dest):
         cell_details (dict): Dictionary storing details of each cell.
         dest (list of int): Coordinates of the destination [row, col].
     """
+def calculate_height_cost(current_height: float, next_height: float) -> float:
+    """
+    Calculate movement cost based on elevation change.
+    Equal cost for uphill and downhill movements.
+    
+    Args:
+        current_height: Height of current node
+        next_height: Height of next node
+    
+    Returns:
+        Cost of movement considering absolute height difference
+    """
+    return abs(next_height - current_height)
 
 
 def a_star_search(grid, src, dest):
