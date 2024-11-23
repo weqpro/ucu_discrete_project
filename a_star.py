@@ -1,6 +1,5 @@
 """
 A* searching algorithm"""
-import math
 
 def is_in_grid(point: tuple[int, int], rows: int, cols: int) -> bool:
     """
