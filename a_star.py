@@ -12,13 +12,13 @@ def is_in_grid(point: tuple[int, int], rows: int, cols: int) -> bool:
 
     :return: True if the cell is within the grid boundaries, False otherwise
 
-    >>> is_in_gird((1, 1), 3, 3)
+    >>> is_in_grid((1, 1), 3, 3)
     True
-    >>> is_in_gird((3, 3), 3, 3)
+    >>> is_in_grid((3, 3), 3, 3)
     False
-    >>> is_in_gird((-1, 2), 3, 3)
+    >>> is_in_grid((-1, 2), 3, 3)
     False
-    >>> is_in_gird((2, 2), 3, 3)
+    >>> is_in_grid((2, 2), 3, 3)
     True
     """
     row, col = point
