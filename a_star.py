@@ -35,14 +35,32 @@ def calculate_h_value(point: tuple[int, int], dest):
     # TODO: rewrite documentstion
 
 
-def trace_path(cell_details, dest):
+def trace_path(cell_details, dest) -> list[tuple]:
     """
-    Traces and prints the path from the source to the destination.
+    Finds the path from the destination to the start using parent information.
 
     Parameters:
-        cell_details (dict): Dictionary storing details of each cell.
-        dest (list of int): Coordinates of the destination [row, col].
+        cell_details: A grid (2D list) where each cell contains a tuple (parent_row, parent_col).
+        dest: Coordinates of the destination cell as (row, col).
+
+    Returns:
+        The path as a list of coordinates [(row, col), ...].
+    Examples:
+        >>> cell_details = [
+        ...     [(0, 0), (0, 0), (0, 1)],
+        ...     [(0, 0), (0, 1), (1, 1)],
+        ...     [(1, 2), (1, 2), (2, 1)]
+        ... ]
+        >>> dest = (2, 2)
+        >>> trace_path(cell_details, dest)
+        [(0, 0), (0, 1), (1, 1), (1, 2), (2, 1), (2, 2)]
     """
+    path = []
+    while cell_details[dest[0]][dest[1]] != dest:
+        path.append(dest)
+        dest = cell_details[dest[0]][dest[1]]
+    return list(reversed(path+[dest]))
+
 
 
 def a_star_search(grid, src, dest):
