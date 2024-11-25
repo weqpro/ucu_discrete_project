@@ -1,5 +1,10 @@
 """
-A* searching algorithm"""
+A* searching algorithm
+"""
+
+from heapq import heappop, heappush
+import math
+
 
 def is_in_grid(point: tuple[int, int], rows: int, cols: int) -> bool:
     """
@@ -124,8 +129,8 @@ def a_star_search_with_height(grid: list[list[float]],
         List of coordinates representing the path, or None if no path exists
     """
     rows, cols = len(grid), len(grid[0])
-    if not (is_valid(src[0], src[1], rows, cols) and
-            is_valid(dest[0], dest[1], rows, cols)):
+    if not (is_in_grid(src, rows, cols) and
+            is_in_grid(dest, rows, cols)):
         return None
     open_list = []
     closed_list = [[False for _ in range(cols)] for _ in range(rows)]
@@ -138,8 +143,8 @@ def a_star_search_with_height(grid: list[list[float]],
     start_row, start_col = src
     cell_details[start_row][start_col] = {
         'g': 0,
-        'h': calculate_h_value(start_row, start_col, dest),
-        'f': calculate_h_value(start_row, start_col, dest),
+        'h': calculate_h_value(src, dest),
+        'f': calculate_h_value(src, dest),
         'parent': None
     }
     heappush(open_list, (0, src))
@@ -165,7 +170,7 @@ def a_star_search_with_height(grid: list[list[float]],
         for dy, dx in directions:
             new_row, new_col = row + dy, col + dx
             
-            if not is_valid(new_row, new_col, rows, cols):
+            if not is_in_grid((new_row, new_col), rows, cols):
                 continue
                 
             if closed_list[new_row][new_col]:
@@ -177,7 +182,7 @@ def a_star_search_with_height(grid: list[list[float]],
             if abs(dy) == 1 and abs(dx) == 1:
                 movement_cost *= math.sqrt(2)
             g_new = cell_details[row][col]['g'] + movement_cost
-            h_new = calculate_h_value(new_row, new_col, dest)
+            h_new = calculate_h_value((new_row, new_col), dest)
             f_new = g_new + h_new
             if cell_details[new_row][new_col]['f'] > f_new:
                 heappush(open_list, (f_new, (new_row, new_col)))
