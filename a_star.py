@@ -84,21 +84,50 @@ def trace_path(cell_details, dest) -> list[tuple]:
         The path as a list of coordinates [(row, col), ...].
     Examples:
         >>> cell_details = [
-        ...     [(0, 0), (0, 0), (0, 1)],
-        ...     [(0, 0), (0, 1), (1, 1)],
-        ...     [(1, 2), (1, 2), (2, 1)]
+        ... [
+        ...    {'g': 0, 'h': 4, 'f': 4, 'parent': (0, 0)},
+        ...    {'g': 1, 'h': 3, 'f': 4, 'parent': (0, 0)},
+        ...    {'g': 2, 'h': 2, 'f': 4, 'parent': (0, 1)}
+        ... ],
+        ... [
+        ...    {'g': 4, 'h': 3, 'f': 7, 'parent': (0, 0)},
+        ...    {'g': 5, 'h': 2, 'f': 7, 'parent': (0, 1)},
+        ...    {'g': 6, 'h': 1, 'f': 7, 'parent': (1, 1)}
+        ... ],
+        ... [
+        ...    {'g': 7, 'h': 2, 'f': 9, 'parent': (1, 2)},
+        ...    {'g': 8, 'h': 1, 'f': 9, 'parent': (1, 2)},
+        ...    {'g': 9, 'h': 0, 'f': 9, 'parent': (2, 1)}
         ... ]
+        ... ]
+
         >>> dest = (2, 2)
         >>> trace_path(cell_details, dest)
         [(0, 0), (0, 1), (1, 1), (1, 2), (2, 1), (2, 2)]
+        
+        >>> dest = (1, 1)
+        >>> trace_path(cell_details, dest)
+        [(0, 0), (0, 1), (1, 1)]
+
+        >>> dest = (0, 1)
+        >>> trace_path(cell_details, dest)
+        [(0, 0), (0, 1)]
+
+        >>> dest = (2, 0)
+        >>> trace_path(cell_details, dest)
+        [(0, 0), (0, 1), (1, 1), (1, 2), (2, 0)]
+
+        >>> dest = (0, 0)
+        >>> trace_path(cell_details, dest)
+        [(0, 0)]
     """
     path = []
-    while cell_details[dest[0]][dest[1]] != dest:
+    while cell_details[dest[0]][dest[1]]['parent'] != dest:
         path.append(dest)
-        dest = cell_details[dest[0]][dest[1]]
+        dest = cell_details[dest[0]][dest[1]]['parent']
     return list(reversed(path+[dest]))
 
-  
+
 def calculate_height_cost(current_height: float, next_height: float) -> float:
     """
     Calculate movement cost based on elevation change.
