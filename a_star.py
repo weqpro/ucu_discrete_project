@@ -182,10 +182,6 @@ def a_star_search_with_height(grid: list[list[float]],
         (1, 0),
         (0, -1),
         (0, 1),
-        (-1, -1),
-        (-1, 1),
-        (1, -1),
-        (1, 1)
     ]
     
     while open_list:
