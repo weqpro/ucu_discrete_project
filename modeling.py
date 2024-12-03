@@ -201,5 +201,5 @@ if __name__ == "__main__":
     )
 
     export_elevation_to_glb(
-        smooth_grid(smooth_grid(grid).T), output_path="sample_terrain2.glb"
+        smooth_grid(smooth_grid(grid).T).T, output_path="sample_terrain2.glb"
     )
