@@ -82,6 +82,20 @@ def trace_path(cell_details, dest) -> list[tuple]:
 
     Returns:
         The path as a list of coordinates [(row, col), ...].
+
+    Examples:
+    >>> cell_details = [[{'parent': None}, {'parent': (0, 0)}, {'parent': (0, 1)}], \
+                        [{'parent': (0, 0)}, {'parent': (1, 0)}, {'parent': (1, 1)}], \
+                        [{'parent': (1, 0)}, {'parent': (2, 0)}, {'parent': (2, 1)}]]
+    >>> trace_path(cell_details, (2, 2))
+    [(0, 0), (1, 0), (2, 0), (2, 1), (2, 2)]
+    >>> cell_details = [[{'parent': None}, {'parent': (0, 0)}], \
+                        [{'parent': (0, 0)}, {'parent': (1, 0)}]]
+    >>> trace_path(cell_details, (1, 1))
+    [(0, 0), (1, 0), (1, 1)]
+    >>> cell_details = [[{'parent': None}]]
+    >>> trace_path(cell_details, (0, 0))
+    [(0, 0)]
     """
     path = []
     while cell_details[dest[0]][dest[1]]['parent'] is not None:
