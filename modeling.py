@@ -139,9 +139,9 @@ def smooth_grid(grid):
     """
     Smooths a 2D grid by adding intermediate points between adjacent elements in each row.
 
-    This function takes a 2D array (or list of lists), and for each row, it calculates two
-    additional points between every pair of adjacent elements. The resulting grid has
-    smoothed rows with additional points, and all rows are padded with zeros to match the
+    This function takes a 2D array (or list of lists), and for each row, it calculates two 
+    additional points between every pair of adjacent elements. The resulting grid has 
+    smoothed rows with additional points, and all rows are padded with zeros to match the 
     length of the longest row.
 
     Parameters
@@ -153,25 +153,31 @@ def smooth_grid(grid):
     Returns
     -------
     numpy.ndarray
-        A smoothed 2D array where each row contains the original points and newly added
+        A smoothed 2D array where each row contains the original points and newly added 
         intermediate points. All rows are padded with zeros to ensure uniform row length.
     """
 
     smoothed_grid = []
     for row in grid:
         smoothed_row = []
+        row_min = min(row)
+
+        smoothed_row.append(row_min)
+
         for i in range(len(row) - 1):
             x1, x2 = i, i + 1
             y1, y2 = row[i], row[i + 1]
             new_y1, new_y2 = find_connecting_points(x1, x2, y1, y2)
             smoothed_row.append(row[i])
             smoothed_row.extend([new_y1, new_y2])
+
         smoothed_row.append(row[-1])
+
+        smoothed_row.append(row_min)
+
         smoothed_grid.append(smoothed_row)
 
     max_length = max(len(row) for row in smoothed_grid)
-    smoothed_grid = np.array(
-        [np.pad(row, (0, max_length - len(row))) for row in smoothed_grid]
-    )
+    smoothed_grid = np.array([np.pad(row, (0, max_length - len(row))) for row in smoothed_grid])
 
     return smoothed_grid
