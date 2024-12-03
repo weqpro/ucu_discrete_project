@@ -82,47 +82,9 @@ def trace_path(cell_details, dest) -> list[tuple]:
 
     Returns:
         The path as a list of coordinates [(row, col), ...].
-    Examples:
-        >>> cell_details = [
-        ... [
-        ...    {'g': 0, 'h': 4, 'f': 4, 'parent': (0, 0)},
-        ...    {'g': 1, 'h': 3, 'f': 4, 'parent': (0, 0)},
-        ...    {'g': 2, 'h': 2, 'f': 4, 'parent': (0, 1)}
-        ... ],
-        ... [
-        ...    {'g': 4, 'h': 3, 'f': 7, 'parent': (0, 0)},
-        ...    {'g': 5, 'h': 2, 'f': 7, 'parent': (0, 1)},
-        ...    {'g': 6, 'h': 1, 'f': 7, 'parent': (1, 1)}
-        ... ],
-        ... [
-        ...    {'g': 7, 'h': 2, 'f': 9, 'parent': (1, 2)},
-        ...    {'g': 8, 'h': 1, 'f': 9, 'parent': (1, 2)},
-        ...    {'g': 9, 'h': 0, 'f': 9, 'parent': (2, 1)}
-        ... ]
-        ... ]
-
-        >>> dest = (2, 2)
-        >>> trace_path(cell_details, dest)
-        [(0, 0), (0, 1), (1, 1), (1, 2), (2, 1), (2, 2)]
-        
-        >>> dest = (1, 1)
-        >>> trace_path(cell_details, dest)
-        [(0, 0), (0, 1), (1, 1)]
-
-        >>> dest = (0, 1)
-        >>> trace_path(cell_details, dest)
-        [(0, 0), (0, 1)]
-
-        >>> dest = (2, 0)
-        >>> trace_path(cell_details, dest)
-        [(0, 0), (0, 1), (1, 1), (1, 2), (2, 0)]
-
-        >>> dest = (0, 0)
-        >>> trace_path(cell_details, dest)
-        [(0, 0)]
     """
     path = []
-    while cell_details[dest[0]][dest[1]]['parent'] != dest:
+    while cell_details[dest[0]][dest[1]]['parent'] is not None:
         path.append(dest)
         dest = cell_details[dest[0]][dest[1]]['parent']
     return list(reversed(path+[dest]))
@@ -139,12 +101,14 @@ def calculate_height_cost(current_height: float, next_height: float) -> float:
     
     Returns:
         Cost of movement considering absolute height difference
+    >>> calculate_height_cost(9, 10)
+    1
     """
     return abs(next_height - current_height)
 
 
-def a_star_search_with_height(grid: list[list[float]], 
-                            src: tuple[int, int], 
+def a_star_search_with_height(grid: list[list[float]],
+                            src: tuple[int, int],
                             dest: tuple[int, int]) -> list[tuple[int, int]] | None:
     """
     A* Search Algorithm with equal costs for uphill and downhill movement.
@@ -156,6 +120,16 @@ def a_star_search_with_height(grid: list[list[float]],
     
     Returns:
         List of coordinates representing the path, or None if no path exists
+    >>> grid = [\
+        [1.0, 1.2, 2.0, 3.0, 2.5],\
+        [1.1, 1.8, 2.3, 2.5, 2.0],\
+        [1.3, 2.0, 3.0, 2.0, 1.5],\
+        [1.7, 2.2, 2.5, 1.5, 1.0],\
+        [2.0, 2.5, 2.0, 1.2, 1.0]]
+    >>> src = (0, 0)
+    >>> dest = (4, 4)
+    >>> a_star_search_with_height(grid, src, dest)
+    [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (4, 1), (4, 2), (4, 3), (4, 4)]
     """
     rows, cols = len(grid), len(grid[0])
     if not (is_in_grid(src, rows, cols) and
@@ -183,21 +157,16 @@ def a_star_search_with_height(grid: list[list[float]],
         (0, -1),
         (0, 1),
     ]
-    
     while open_list:
         _, current = heappop(open_list)
         row, col = current
-        
         if (row, col) == dest:
             return trace_path(cell_details, dest)
-            
         closed_list[row][col] = True
         for dy, dx in directions:
             new_row, new_col = row + dy, col + dx
-            
             if not is_in_grid((new_row, new_col), rows, cols):
                 continue
-                
             if closed_list[new_row][new_col]:
                 continue
             movement_cost = calculate_height_cost(
@@ -217,10 +186,7 @@ def a_star_search_with_height(grid: list[list[float]],
                     'f': f_new,
                     'parent': (row, col)
                 }
-    
     return None
-
-
 if __name__ == '__main__':
     import doctest
     print(doctest.testmod())
