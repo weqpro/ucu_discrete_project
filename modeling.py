@@ -158,10 +158,10 @@ def smooth_grid(grid):
     """
 
     smoothed_grid = []
+    row_min = min({min(row) for row in grid})
+
     for row in grid:
         smoothed_row = []
-        row_min = min(row)
-
         smoothed_row.append(row_min)
 
         for i in range(len(row) - 1):
