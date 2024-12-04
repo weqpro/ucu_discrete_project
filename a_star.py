@@ -177,7 +177,7 @@ def a_star_search_with_height(grid: list[list[float]],
     >>> src = (0, 0)
     >>> dest = (4, 4)
     >>> a_star_search_with_height(grid, src, dest)
-    [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (4, 1), (4, 2), (4, 3), (4, 4)]
+    [(0, 0), (1, 0), (2, 0), (3, 0), (3, 1), (3, 2), (3, 3), (3, 4), (4, 4)]
     """
     rows, cols = len(grid), len(grid[0])
     if not (is_in_grid(src, rows, cols) and
@@ -205,7 +205,7 @@ def a_star_search_with_height(grid: list[list[float]],
         (0, -1),
         (0, 1),
     ]
-    arg = a_star_1((open_list, dest, directions, rows, cols, closed_list, grid, cell_details))
+    arg = a_star_1(open_list, dest, directions, rows, cols, closed_list, grid, cell_details)
     return arg
     # while open_list:
     #     _, current = heappop(open_list)

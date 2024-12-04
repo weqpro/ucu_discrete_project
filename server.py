@@ -39,6 +39,26 @@ def set_grid():
     except Exception as e:
         return jsonify({'error': f'Error processing the file: {str(e)}'}), 500
 
+@app.route('/init-info', methods=['POST'])
+def init_info():
+    data = request.get_json()
+    required_fields = ['startX', 'startY', 'endX', 'endY', 'step']
+
+    if not all(field in data for field in required_fields):
+        return jsonify({'error': 'Missing required fields'}), 400
+
+    try:
+        coordinates = {
+            'startX': data['startX'],
+            'startY': data['startY'],
+            'endX': data['endX'],
+            'endY': data['endY'],
+            'step': data['step']
+        }
+        return jsonify({'message': 'Coordinates received successfully', 'data': coordinates}), 200
+    except Exception as e:
+        return jsonify({'error': f'Error processing coordinates: {str(e)}'}), 500
+
 
 def root_dir():  # pragma: no cover
     return os.path.abspath(os.path.dirname(__file__))
