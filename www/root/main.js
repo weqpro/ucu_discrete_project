@@ -112,13 +112,14 @@ dropArea.addEventListener('drop', (event) => {
 
 // Send coordinates and step to the server
 function sendCoordinatesToServer(startX, startY, endX, endY, step) {
-    const url = "http://127.0.0.1:1234/init_info"; // Make sure this matches your server URL
+    const url = "http://127.0.0.1:1234/init-info"; // Make sure this matches your server URL
     const data = { startX, startY, endX, endY, step };
 
     fetch(url, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
         },
         body: JSON.stringify(data),
     })

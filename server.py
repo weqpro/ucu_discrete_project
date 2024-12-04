@@ -1,4 +1,4 @@
-from flask import Flask, Response, jsonify, request
+from flask import Flask, Response, jsonify, make_response, request
 import os
 import csv
 
@@ -56,10 +56,15 @@ def init_info():
             'step': data['step']
         }
 
-        response = jsonify({'message': 'Coordinates received successfully', 'data': coordinates})
-        response.headers.add("Access-Control-Allow-Origin", "*")
+        print(coordinates)
 
-        return 
+        response = make_response(
+            jsonify({'message': 'Coordinates received successfully', 'data': coordinates}),
+            200,
+            {"Access-Control-Allow-Origin": "*"}
+        )
+
+        return response
     except Exception as e:
         return jsonify({'error': f'Error processing coordinates: {str(e)}'}), 500
 
@@ -82,7 +87,7 @@ def get_file(filename):  # pragma: no cover
 
 
 #  @app.route("/", defaults={"path": ""})
-@app.route("/<path:path>")
+@app.route("/www/<path:path>")
 def get_resource(path):  # pragma: no cover
     print("RAN")
     mimetypes = {
@@ -90,7 +95,7 @@ def get_resource(path):  # pragma: no cover
         ".html": "text/html",
         ".js": "application/javascript",
     }
-    complete_path = os.path.join(root_dir(), "www", "root", path)
+    complete_path = os.path.join(root_dir(), "www", path)
     ext = os.path.splitext(path)[1]
     mimetype = mimetypes.get(ext, "text/html")
     content = get_file(complete_path)
