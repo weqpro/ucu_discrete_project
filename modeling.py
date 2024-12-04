@@ -101,7 +101,55 @@ def elevation_grid_to_mesh(elevation_grid, colormap):
     return mesh
 
 
-def export_elevation_to_glb(elevation_grid, output_path="terrain.glb"):
+def draw_point_on_grid_mesh(grid_mesh, x, y, color=[255, 0, 0], radius=0.1):
+    """
+    Draw a point on an existing grid mesh at specified (x, y) coordinates,
+    finding elevation from the mesh vertices.
+
+    Parameters:
+    - grid_mesh: Existing Trimesh object of the grid
+    - x: x-coordinate of the point
+    - y: y-coordinate of the point
+    - color: RGB color of the point (default is red)
+    - radius: Size of the point (default is 0.1)
+
+    Returns:
+    - A new Trimesh object with the point added
+    """
+    # Find the z elevation by interpolating from mesh vertices
+    # First, find the closest vertices
+    vertices = grid_mesh.vertices
+
+    # Calculate distances to all vertices
+    distances = np.sqrt((vertices[:, 0] - x) ** 2 + (vertices[:, 1] - y) ** 2)
+
+    # Find indices of the 4 closest vertices
+    closest_indices = np.argsort(distances)[:4]
+    closest_vertices = vertices[closest_indices]
+
+    # Perform inverse distance weighted interpolation
+    weights = 1.0 / (distances[closest_indices] + 1e-10)
+    weights /= weights.sum()
+
+    # Interpolate z coordinate
+    z = np.sum(closest_vertices[:, 2] * weights)
+
+    # Create a point sphere
+    point_sphere = trimesh.creation.icosphere(radius=radius)
+
+    # Translate the point sphere to the specified location
+    point_sphere.apply_translation([x, y, z])
+
+    # Color the point
+    point_sphere.visual.face_colors = color
+
+    # Combine the original mesh with the point
+    combined_mesh = trimesh.util.concatenate([grid_mesh, point_sphere])
+
+    return combined_mesh
+
+
+def export_elevation_to_glb(grid_mesh, output_path="terrain.glb"):
     """
     Export an elevation grid to a .glb file with color information.
 
@@ -110,27 +158,9 @@ def export_elevation_to_glb(elevation_grid, output_path="terrain.glb"):
     - output_path: Path to save the .glb file
     """
     try:
-        # Create a terrain-specific colormap
-        terrain_colormap = create_terrain_colormap()
-
-        # Convert elevation grid to colored mesh
-        grid_mesh = elevation_grid_to_mesh(elevation_grid, terrain_colormap)
-
-        # Export to GILT file
         grid_mesh.export(output_path)
 
         print(f"Colored elevation grid exported successfully to {output_path}")
-
-        # Optional: Create a color map visualization
-        plt.figure(figsize=(8, 2))
-        gradient = np.linspace(0, 1, 256).reshape(1, -1)
-        plt.imshow(gradient, aspect="auto", cmap=terrain_colormap)
-        plt.title("Terrain Elevation Color Map")
-        plt.axis("off")
-        plt.tight_layout()
-        plt.savefig("terrain_colormap.png")
-        plt.close()
-
     except Exception as e:
         print(f"Error exporting elevation grid: {e}")
 
@@ -139,9 +169,9 @@ def smooth_grid(grid):
     """
     Smooths a 2D grid by adding intermediate points between adjacent elements in each row.
 
-    This function takes a 2D array (or list of lists), and for each row, it calculates two 
-    additional points between every pair of adjacent elements. The resulting grid has 
-    smoothed rows with additional points, and all rows are padded with zeros to match the 
+    This function takes a 2D array (or list of lists), and for each row, it calculates two
+    additional points between every pair of adjacent elements. The resulting grid has
+    smoothed rows with additional points, and all rows are padded with zeros to match the
     length of the longest row.
 
     Parameters
@@ -153,7 +183,7 @@ def smooth_grid(grid):
     Returns
     -------
     numpy.ndarray
-        A smoothed 2D array where each row contains the original points and newly added 
+        A smoothed 2D array where each row contains the original points and newly added
         intermediate points. All rows are padded with zeros to ensure uniform row length.
     """
 
@@ -178,6 +208,31 @@ def smooth_grid(grid):
         smoothed_grid.append(smoothed_row)
 
     max_length = max(len(row) for row in smoothed_grid)
-    smoothed_grid = np.array([np.pad(row, (0, max_length - len(row))) for row in smoothed_grid])
+    smoothed_grid = np.array(
+        [np.pad(row, (0, max_length - len(row))) for row in smoothed_grid]
+    )
 
     return smoothed_grid
+
+
+if __name__ == "__main__":
+    grid = np.array(
+        [
+            np.array([1, 2, 3, 4, 5, 1, 2, 3, 4]),
+            np.array([1, 1, 2, 2, 3, 1, 2, 3, 4]),
+            np.array([4, 2, 2, 3, 5, 1, 2, 3, 4]),
+            np.array([3, 2, 1, 3, 3, 1, 2, 3, 4]),
+            np.array([2, 1, 1, 2, 3, 1, 2, 3, 4]),
+            np.array([3, 2, 1, 3, 3, 1, 7, 3, 4]),
+            np.array([3, 2, 1, 3, 3, 1, 2, 3, 4]),
+            np.array([2, 1, 1, 2, 3, 1, 8, 2, 2]),
+            np.array([1, 2, 3, 4, 5, 1, 2, 3, 2]),
+        ]
+    )
+
+    colormap = create_terrain_colormap()
+
+    smth = elevation_grid_to_mesh(smooth_grid(smooth_grid(grid).T).T, colormap)
+    smth_with_point = draw_point_on_grid_mesh(smth, 3, 4, color=[255, 0, 0], radius=0.2)
+
+    export_elevation_to_glb(smth_with_point, output_path="sample_terrain2.glb")
