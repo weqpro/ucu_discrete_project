@@ -1,5 +1,6 @@
-from flask import Flask, Response
-import os.path
+from flask import Flask, Response, jsonify, request
+import os
+import csv
 
 app = Flask(__name__)
 
@@ -7,6 +8,36 @@ app = Flask(__name__)
 @app.route("/")
 def home():
     return "Home"
+
+UPLOAD_FOLDER = './www/root/'
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+@app.route('/set-grid', methods=['POST'])
+def set_grid():
+    if 'file' not in request.files:
+        return jsonify({'error': 'File not provided'}), 400
+
+    uploaded_file = request.files['file']
+
+    if uploaded_file.filename == '':
+        return jsonify({'error': 'No file selected'}), 400
+
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], uploaded_file.filename)
+    uploaded_file.save(file_path)
+
+    csv_path = os.path.splitext(file_path)[0] + '.csv'
+    try:
+        with open(file_path, 'r') as input_file, open(csv_path, 'w', newline='') as output_file:
+            reader = input_file.readlines()
+            writer = csv.writer(output_file)
+
+            for line in reader:
+                writer.writerow([line.strip()])
+
+        return jsonify({'message': 'File processed and saved as CSV', 'csv_file': csv_path}), 200
+    except Exception as e:
+        return jsonify({'error': f'Error processing the file: {str(e)}'}), 500
 
 
 def root_dir():  # pragma: no cover
