@@ -88,53 +88,82 @@ function animate() {
 }
 animate();
 
-// Drag-and-drop file upload logic
-const dropArea = document.getElementById('drop-area');
-let draggedFile = null;
+document.addEventListener('DOMContentLoaded', () => {
+  const dropZone = document.querySelector('.drop-area');
 
-dropArea.addEventListener('dragover', (event) => {
-    event.preventDefault();
-    dropArea.classList.add('dragover');
-});
+  // Prevent default behaviors for drag events
+  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    dropZone.addEventListener(eventName, event => event.preventDefault());
+    dropZone.addEventListener(eventName, event => event.stopPropagation());
+  });
 
-dropArea.addEventListener('dragleave', () => {
-    dropArea.classList.remove('dragover');
-});
+  // Highlight the drop zone on drag enter/over
+  ['dragenter', 'dragover'].forEach(eventName => {
+    dropZone.classList.add('dragover');
+  });
 
-dropArea.addEventListener('drop', (event) => {
-    event.preventDefault();
-    dropArea.classList.remove('dragover');
-    draggedFile = event.dataTransfer.files[0]; // Get the first file
-    if (draggedFile) {
-        alert(`File ready to upload: ${draggedFile.name}`);
+  // Remove highlight on drag leave/drop
+  ['dragleave', 'drop'].forEach(eventName => {
+    dropZone.classList.remove('dragover');
+  });
+
+  // Handle the dropped file
+  dropZone.addEventListener('drop', event => {
+    const file = event.dataTransfer.files[0]; // Get the first file
+    if (!file) {
+      alert('No file dropped!');
+      return;
     }
+
+    uploadFile(file);
+  });
+
+  async function uploadFile(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await fetch('http://127.0.0.1:1234/set-grid', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        alert('File uploaded successfully!');
+      } else {
+        alert('File upload failed!');
+      }
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      alert('An error occurred while uploading the file.');
+    }
+  }
 });
 
 // Send coordinates and step to the server
 function sendCoordinatesToServer(startX, startY, endX, endY, step) {
     const url = "http://127.0.0.1:1234/init-info"; // Make sure this matches your server URL
     const data = { startX, startY, endX, endY, step };
-
     fetch(url, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
-        },
-        body: JSON.stringify(data),
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-    })
-    .then(data => {
-        console.log("Coordinates successfully sent:", data);
-    })
-    .catch(error => {
-        console.error("Error during coordinate upload:", error);
-    });
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+      },
+      body: JSON.stringify(data),
+  })
+  .then(response => {
+      if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+  })
+  .then(data => {
+      console.log("Coordinates successfully sent:", data);
+  })
+  .catch(error => {
+      console.error("Error during coordinate upload:", error);
+  });
 }
 
 // Add event listeners for input fields to capture coordinate and step changes
@@ -155,5 +184,7 @@ stepInput.addEventListener('input', (e) => { step = e.target.value; });
 // Button to send the data to the server
 const sendDataButton = document.getElementById('send-coordinates-btn');
 sendDataButton.addEventListener('click', () => {
-    sendCoordinatesToServer(startX, startY, endX, endY, step);
+  sendCoordinatesToServer(startX, startY, endX, endY, step);
+  console.log('Coordinates sent!')
 });
+

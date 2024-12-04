@@ -1,0 +1,22 @@
+[tool.pyright]
+include = ["src"]
+exclude = [
+  "**/node_modules",
+  "**/__pycache__",
+]
+
+typeCheckingMode = "strict"
+
+executionEnvironments [
+  {
+    "root": "./",
+    "venv": "./.venv",
+    "extraPaths": [
+      "./3rd-modules"
+    ]
+  }
+]
+
+python.venvPath = "./venv/"
+
+reportMissingImports = "error"

@@ -4,7 +4,6 @@ import csv
 
 app = Flask(__name__)
 
-
 @app.route("/")
 def home():
     return "Home"
@@ -13,6 +12,7 @@ UPLOAD_FOLDER = './www/root/'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
+# Route for file upload and CSV conversion
 @app.route('/set-grid', methods=['POST'])
 def set_grid():
     if 'file' not in request.files:
@@ -39,6 +39,7 @@ def set_grid():
     except Exception as e:
         return jsonify({'error': f'Error processing the file: {str(e)}'}), 500
 
+# Route for handling coordinates (JSON data)
 @app.route('/init-info', methods=['POST'])
 def init_info():
     data = request.get_json()
@@ -56,7 +57,7 @@ def init_info():
             'step': data['step']
         }
 
-        print(coordinates)
+        print("Coordinates received:", coordinates)
 
         response = make_response(
             jsonify({'message': 'Coordinates received successfully', 'data': coordinates}),
@@ -68,7 +69,7 @@ def init_info():
     except Exception as e:
         return jsonify({'error': f'Error processing coordinates: {str(e)}'}), 500
 
-
+# Route to serve static files
 def root_dir():  # pragma: no cover
     return os.path.abspath(os.path.dirname(__file__))
 
@@ -76,20 +77,13 @@ def root_dir():  # pragma: no cover
 def get_file(filename):  # pragma: no cover
     try:
         src = os.path.join(root_dir(), filename)
-        # Figure out how flask returns static files
-        # Tried:
-        # - render_template
-        # - send_file
-        # This should not be so non-obvious
         return open(src, "rb").read()
     except IOError as exc:
         return str(exc)
 
 
-#  @app.route("/", defaults={"path": ""})
 @app.route("/www/<path:path>")
 def get_resource(path):  # pragma: no cover
-    print("RAN")
     mimetypes = {
         ".css": "text/css",
         ".html": "text/html",
@@ -100,3 +94,34 @@ def get_resource(path):  # pragma: no cover
     mimetype = mimetypes.get(ext, "text/html")
     content = get_file(complete_path)
     return Response(content, mimetype=mimetype)
+
+@app.route('/init-info', methods=['POST', 'OPTIONS'])
+def upload_file():
+    # Handle OPTIONS preflight request for CORS
+    if request.method == 'OPTIONS':
+        response = make_response()
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+        return response
+
+    # Check if file is present in the request
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part'}), 415
+    
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+    
+    # Ensure upload directory exists
+    os.makedirs('./uploads', exist_ok=True)
+    
+    # Save the file
+    file.save(f"./uploads/{file.filename}")
+    
+    # Create response with CORS headers
+    response = make_response(jsonify({'message': 'File successfully uploaded'}), 200)
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    return response
+if __name__ == '__main__':
+    app.run(debug=True)

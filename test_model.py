@@ -4,10 +4,6 @@ import trimesh
 import scipy.spatial
 import matplotlib.colors as mcolors
 
-START = (1, 3)
-END = (2, 5)
-STEP = 1
-
 
 def find_connecting_points(
     x1: float, x2: float, y1: float, y2: float, strength: float = 0.15
@@ -29,6 +25,56 @@ def find_connecting_points(
     smooth_y2 = (y(0.80 * (x2 - x1) + x1) - y1) + ((y2 - y1) * strength) + y1
 
     return smooth_y1, smooth_y2
+
+
+def smooth_grid(grid):
+    """
+    Smooths a 2D grid by adding intermediate points between adjacent elements in each row.
+
+    This function takes a 2D array (or list of lists), and for each row, it calculates two
+    additional points between every pair of adjacent elements. The resulting grid has
+    smoothed rows with additional points, and all rows are padded with zeros to match the
+    length of the longest row.
+
+    Parameters
+    ----------
+    grid : list[list[float]] or numpy.ndarray
+        The input 2D array or grid. Each row represents a sequence of values (e.g., coordinates or data points).
+        Rows can have different lengths, but the function ensures uniformity in the output.
+
+    Returns
+    -------
+    numpy.ndarray
+        A smoothed 2D array where each row contains the original points and newly added
+        intermediate points. All rows are padded with zeros to ensure uniform row length.
+    """
+
+    smoothed_grid = []
+    row_min = min({min(row) for row in grid})
+
+    for row in grid:
+        smoothed_row = []
+        smoothed_row.append(row_min)
+
+        for i in range(len(row) - 1):
+            x1, x2 = i, i + 1
+            y1, y2 = row[i], row[i + 1]
+            new_y1, new_y2 = find_connecting_points(x1, x2, y1, y2)
+            smoothed_row.append(row[i])
+            smoothed_row.extend([new_y1, new_y2])
+
+        smoothed_row.append(row[-1])
+
+        smoothed_row.append(row_min)
+
+        smoothed_grid.append(smoothed_row)
+
+    max_length = max(len(row) for row in smoothed_grid)
+    smoothed_grid = np.array(
+        [np.pad(row, (0, max_length - len(row))) for row in smoothed_grid]
+    )
+
+    return smoothed_grid
 
 
 def create_terrain_colormap():
@@ -105,10 +151,27 @@ def elevation_grid_to_mesh(elevation_grid, colormap):
     return mesh
 
 
-def draw_point_on_grid_mesh(grid_mesh, x, y, color=[255, 0, 0], radius=0.1):
+def export_elevation_to_glb(grid_mesh, output_path="terrain.glb"):
     """
-    Draw a point on an existing grid mesh at specified (x, y) coordinates,
-    finding elevation from the mesh vertices.
+    Export an elevation grid to a .glb file with color information.
+
+    Parameters:
+    - elevation_grid: 2D numpy array of elevation values
+    - output_path: Path to save the .glb file
+    """
+    try:
+        # Export to GILT file
+        grid_mesh.export(output_path)
+
+        print(f"Colored elevation grid exported successfully to {output_path}")
+
+    except Exception as e:
+        print(f"Error exporting elevation grid: {e}")
+
+
+def draw_point_on_grid_mesh(grid_mesh, x, y, color=[255, 0, 0], radius=0.2):
+    """
+    Draw a point on an existing grid mesh at specified (x, y) coordinates.
 
     Parameters:
     - grid_mesh: Existing Trimesh object of the grid
@@ -120,8 +183,6 @@ def draw_point_on_grid_mesh(grid_mesh, x, y, color=[255, 0, 0], radius=0.1):
     Returns:
     - A new Trimesh object with the point added
     """
-    # Find the z elevation by interpolating from mesh vertices
-    # First, find the closest vertices
     vertices = grid_mesh.vertices
 
     # Calculate distances to all vertices
@@ -153,88 +214,34 @@ def draw_point_on_grid_mesh(grid_mesh, x, y, color=[255, 0, 0], radius=0.1):
     return combined_mesh
 
 
-def export_elevation_to_glb(grid_mesh, output_path="terrain.glb"):
-    """
-    Export an elevation grid to a .glb file with color information.
-
-    Parameters:
-    - elevation_grid: 2D numpy array of elevation values
-    - output_path: Path to save the .glb file
-    """
-    try:
-        grid_mesh.export(output_path)
-
-        print(f"Colored elevation grid exported successfully to {output_path}")
-    except Exception as e:
-        print(f"Error exporting elevation grid: {e}")
-
-
-def smooth_grid(grid):
-    """
-    Smooths a 2D grid by adding intermediate points between adjacent elements in each row.
-
-    This function takes a 2D array (or list of lists), and for each row, it calculates two
-    additional points between every pair of adjacent elements. The resulting grid has
-    smoothed rows with additional points, and all rows are padded with zeros to match the
-    length of the longest row.
-
-    Parameters
-    ----------
-    grid : list[list[float]] or numpy.ndarray
-        The input 2D array or grid. Each row represents a sequence of values (e.g., coordinates or data points).
-        Rows can have different lengths, but the function ensures uniformity in the output.
-
-    Returns
-    -------
-    numpy.ndarray
-        A smoothed 2D array where each row contains the original points and newly added
-        intermediate points. All rows are padded with zeros to ensure uniform row length.
-    """
-
-    smoothed_grid = []
-    row_min = min({min(row) for row in grid})
-
-    for row in grid:
-        smoothed_row = []
-        smoothed_row.append(row_min)
-
-        for i in range(len(row) - 1):
-            x1, x2 = i, i + 1
-            y1, y2 = row[i], row[i + 1]
-            new_y1, new_y2 = find_connecting_points(x1, x2, y1, y2)
-            smoothed_row.append(row[i])
-            smoothed_row.extend([new_y1, new_y2])
-
-        smoothed_row.append(row[-1])
-
-        smoothed_row.append(row_min)
-
-        smoothed_grid.append(smoothed_row)
-
-    max_length = max(len(row) for row in smoothed_grid)
-    smoothed_grid = np.array(
-        [np.pad(row, (0, max_length - len(row))) for row in smoothed_grid]
+if __name__ == "__main__":
+    grid = np.array(
+        [
+            np.array([1, 2, 3, 4, 5, 1, 2, 3, 4]),
+            np.array([1, 1, 2, 2, 3, 1, 2, 3, 4]),
+            np.array([4, 2, 2, 3, 5, 1, 2, 3, 4]),
+            np.array([3, 2, 1, 3, 3, 1, 2, 3, 4]),
+            np.array([2, 1, 1, 2, 3, 1, 2, 3, 4]),
+            np.array([3, 2, 1, 3, 3, 1, 7, 3, 4]),
+            np.array([3, 2, 1, 3, 3, 1, 2, 3, 4]),
+            np.array([2, 1, 1, 2, 3, 1, 8, 2, 2]),
+            np.array([1, 2, 3, 4, 5, 1, 2, 3, 2]),
+        ]
     )
 
-    return smoothed_grid
+    start = (3, 3)
+    end = (6, 7)
 
-
-def main():
-    grid = np.loadtxt(open("test.csv", "rb"), delimiter=",")
-
-    from a_star import a_star_search_with_height
-
-    path = a_star_search_with_height(grid.tolist(), STEP, START, END)
+    def to_smooth_indexes(point: tuple[int, int]):
+        return 1 + 3 * point[0], 1 + 3 * point[1]
 
     colormap = create_terrain_colormap()
+    grid_mesh = elevation_grid_to_mesh(smooth_grid(smooth_grid(grid).T).T, colormap)
+    grid_mesh = draw_point_on_grid_mesh(
+        grid_mesh, *to_smooth_indexes(start), color=[0, 255, 0]
+    )
+    grid_mesh = draw_point_on_grid_mesh(
+        grid_mesh, *to_smooth_indexes(end), color=[0, 0, 255]
+    )
 
-    smth = elevation_grid_to_mesh(smooth_grid(smooth_grid(grid).T).T, colormap)
-    if path is not None:
-        for point in path:
-            smth = draw_point_on_grid_mesh(smth, *point, color=[66, 135, 245])
-
-    export_elevation_to_glb(smth, output_path="www/root/sample_terrain2.glb")
-
-
-if __name__ == "__main__":
-    main()
+    export_elevation_to_glb(grid_mesh)
