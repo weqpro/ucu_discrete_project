@@ -55,7 +55,11 @@ def init_info():
             'endY': data['endY'],
             'step': data['step']
         }
-        return jsonify({'message': 'Coordinates received successfully', 'data': coordinates}), 200
+
+        response = jsonify({'message': 'Coordinates received successfully', 'data': coordinates})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return 
     except Exception as e:
         return jsonify({'error': f'Error processing coordinates: {str(e)}'}), 500
 
