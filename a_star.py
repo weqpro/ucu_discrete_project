@@ -115,10 +115,12 @@ def calculate_height_cost(current_height: float, next_height: float) -> float:
     
     Returns:
         Cost of movement considering absolute height difference
-    >>> calculate_height_cost(9, 10)
-    1
+    >>> calculate_height_cost(3, 4)
+    5.0
+    >>> calculate_height_cost(12, 5)
+    13.0
     """
-    return abs(next_height - current_height)
+    return math.sqrt(next_height**2 + current_height**2)
 
 
 def a_star_1(open_list, dest, directions, rows, cols, closed_list, grid, cell_details):
