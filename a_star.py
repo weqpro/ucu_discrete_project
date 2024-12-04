@@ -178,6 +178,8 @@ def a_star_search_with_height(grid: list[list[float]],
     >>> dest = (4, 4)
     >>> a_star_search_with_height(grid, src, dest)
     [(0, 0), (1, 0), (2, 0), (3, 0), (3, 1), (3, 2), (3, 3), (3, 4), (4, 4)]
+    >>> a_star_search_with_height([[1.0, 2.0, 3.0, 4.0], [1.5, 1.8, 2.5, 3.5], [2.0, 2.2, 2.0, 3.0], [2.5, 2.7, 2.3, 2.5]], (0, 0), (3, 3))
+    [(0, 0), (1, 0), (2, 0), (3, 0), (3, 1), (3, 2), (3, 3)]
     """
     rows, cols = len(grid), len(grid[0])
     if not (is_in_grid(src, rows, cols) and
