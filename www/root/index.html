@@ -23,24 +23,25 @@
     </div>
 
     <!-- Text fields for "start" and "end" coordinates -->
-    <div id="coordinates">
-        <div class="coordinate-row">
-            <label>Start:</label>
-            <input type="number" id="start-x" placeholder="x">
-            <input type="number" id="start-y" placeholder="y">
-        </div>
-        <div class="coordinate-row">
-            <label>End:</label>
-            <input type="number" id="end-x" placeholder="x">
-            <input type="number" id="end-y" placeholder="y">
-        </div>
+    <div id="coordinates-container" style="margin-bottom: 10px;">
+        <label for="start-x">Start X:</label>
+        <input id="start-x" type="number" placeholder="Enter X">
+        <label for="start-y">Start Y:</label>
+        <input id="start-y" type="number" placeholder="Enter Y">
+        <label for="end-x">End X:</label>
+        <input id="end-x" type="number" placeholder="Enter X">
+        <label for="end-y">End Y:</label>
+        <input id="end-y" type="number" placeholder="Enter Y">
+        <label for="step">Step:</label>
+        <input id="step" type="number" placeholder="Enter step value">
+        <button id="send-coordinates-btn" style="margin-top: 10px;">Submit</button>
     </div>
 
     <!-- Drag-and-drop file area -->
     <div id="drop-area" class="drop-area">
         <p>Drag a file here</p>
     </div>
-
+    <!-- Add the new step field -->
     <script type="module" src="./main.js"></script>
 </body>
 

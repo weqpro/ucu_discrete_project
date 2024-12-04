@@ -59,38 +59,48 @@ loader.load('sample_terrain2.glb', (gltf) => {
     mesh.scale.set(0.2, 0.2, 0.2);
     mesh.position.set(-2.5, 0, 2.5);
     mesh.traverse((child) => {
-      if (child.isMesh) {
-        child.castShadow = true;
-        child.receiveShadow = true;
-      }
+        if (child.isMesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+        }
     });
     scene.add(mesh);
 
     // Hide the progress container (ensure this exists in your HTML)
     const progressContainer = document.getElementById('progress-container');
     if (progressContainer) {
-      progressContainer.style.display = 'none';
+        progressContainer.style.display = 'none';
     }
 });
 
 // Window resize event listener
 window.addEventListener('resize', () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
 // Animation loop
 function animate() {
-  requestAnimationFrame(animate);
-  controls.update();
-  renderer.render(scene, camera);
+    requestAnimationFrame(animate);
+    controls.update();
+    renderer.render(scene, camera);
 }
 animate();
 
 // Drag-and-drop file upload logic
 const dropArea = document.getElementById('drop-area');
 let draggedFile = null;
+
+// Variables to store text field values
+let startX = null, startY = null, endX = null, endY = null, step = null;
+
+// Attach event listeners to the text fields
+document.getElementById('start-x').addEventListener('input', (e) => startX = parseFloat(e.target.value));
+document.getElementById('start-y').addEventListener('input', (e) => startY = parseFloat(e.target.value));
+document.getElementById('end-x').addEventListener('input', (e) => endX = parseFloat(e.target.value));
+document.getElementById('end-y').addEventListener('input', (e) => endY = parseFloat(e.target.value));
+document.getElementById('step').addEventListener('input', (e) => step = parseFloat(e.target.value));
 
 dropArea.addEventListener('dragover', (event) => {
     event.preventDefault();
@@ -101,34 +111,86 @@ dropArea.addEventListener('dragleave', () => {
     dropArea.classList.remove('dragover');
 });
 
+// Server endpoint
+const serverURL = "https://your-server-url.com/upload"; // Replace with your actual server endpoint
+
+// Function to send the file to the server
+function sendFileToServer(fileContent, fileName) {
+    const dataToSend = {
+        fileContent: fileContent,
+        fileName: fileName,
+    };
+
+    fetch(serverURL, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(dataToSend)
+    })
+        .then((response) => {
+            if (response.ok) {
+                console.log("File successfully uploaded!");
+                return response.json();
+            } else {
+                console.error("Failed to upload file:", response.status, response.statusText);
+            }
+        })
+        .catch((error) => {
+            console.error("Error during file upload:", error);
+        });
+}
+
+// Function to send coordinates and step to the server
+function sendCoordinatesToServer(coordinates) {
+    fetch(`${serverURL}/coordinates`, { // Use a different endpoint if needed
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(coordinates)
+    })
+        .then((response) => {
+            if (response.ok) {
+                console.log("Coordinates and step successfully uploaded!");
+                return response.json();
+            } else {
+                console.error("Failed to upload coordinates:", response.status, response.statusText);
+            }
+        })
+        .catch((error) => {
+            console.error("Error during coordinates upload:", error);
+        });
+}
+
+// Handle file drop
 dropArea.addEventListener('drop', (event) => {
     event.preventDefault();
     dropArea.classList.remove('dragover');
     draggedFile = event.dataTransfer.files[0]; // Get the first file
+
     if (draggedFile) {
-        alert(`File ready to upload: ${draggedFile.name}`);
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const fileContent = e.target.result; // File content as text
+            console.log("File content ready to send:", fileContent);
+
+            // Send the file content to the server
+            sendFileToServer(fileContent, draggedFile.name);
+        };
+        reader.readAsText(draggedFile); // Read the file as text
     }
 });
 
-// Variables to store coordinates
-let startX = null;
-let startY = null;
-let endX = null;
-let endY = null;
+// Handle coordinate submission
+document.getElementById('send-coordinates-btn').addEventListener('click', () => {
+    const coordinates = { startX, startY, endX, endY, step };
 
-// Function to update the coordinates
-function updateCoordinates() {
-    startX = parseFloat(document.getElementById('start-x').value) || null;
-    startY = parseFloat(document.getElementById('start-y').value) || null;
-    endX = parseFloat(document.getElementById('end-x').value) || null;
-    endY = parseFloat(document.getElementById('end-y').value) || null;
+    if (Object.values(coordinates).some((val) => val === null || isNaN(val))) {
+        alert("Please fill in all coordinates (startX, startY, endX, endY, step) before submitting.");
+        return;
+    }
 
-    console.log("Start Coordinates:", { x: startX, y: startY });
-    console.log("End Coordinates:", { x: endX, y: endY });
-}
-
-// Add event listeners to input fields
-document.getElementById('start-x').addEventListener('input', updateCoordinates);
-document.getElementById('start-y').addEventListener('input', updateCoordinates);
-document.getElementById('end-x').addEventListener('input', updateCoordinates);
-document.getElementById('end-y').addEventListener('input', updateCoordinates);
+    // Send the coordinates and step to the server
+    sendCoordinatesToServer(coordinates);
+});
