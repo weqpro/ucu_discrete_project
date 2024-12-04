@@ -121,6 +121,38 @@ def calculate_height_cost(current_height: float, next_height: float) -> float:
     return abs(next_height - current_height)
 
 
+def a_star_1(open_list, dest, directions, rows, cols, closed_list, grid, cell_details):
+    while open_list:
+        _, current = heappop(open_list)
+        row, col = current
+        if (row, col) == dest:
+            return trace_path(cell_details, dest)
+        closed_list[row][col] = True
+        for dy, dx in directions:
+            new_row, new_col = row + dy, col + dx
+            if not is_in_grid((new_row, new_col), rows, cols):
+                continue
+            if closed_list[new_row][new_col]:
+                continue
+            movement_cost = calculate_height_cost(
+                grid[row][col],
+                grid[new_row][new_col]
+            )
+            if abs(dy) == 1 and abs(dx) == 1:
+                movement_cost *= math.sqrt(2)
+            g_new = cell_details[row][col]['g'] + movement_cost
+            h_new = calculate_h_value((new_row, new_col), dest)
+            f_new = g_new + h_new
+            if cell_details[new_row][new_col]['f'] > f_new:
+                heappush(open_list, (f_new, (new_row, new_col)))
+                cell_details[new_row][new_col] = {
+                    'g': g_new,
+                    'h': h_new,
+                    'f': f_new,
+                    'parent': (row, col)
+                }
+    return None    
+
 def a_star_search_with_height(grid: list[list[float]],
                             src: tuple[int, int],
                             dest: tuple[int, int]) -> list[tuple[int, int]] | None:
@@ -171,36 +203,38 @@ def a_star_search_with_height(grid: list[list[float]],
         (0, -1),
         (0, 1),
     ]
-    while open_list:
-        _, current = heappop(open_list)
-        row, col = current
-        if (row, col) == dest:
-            return trace_path(cell_details, dest)
-        closed_list[row][col] = True
-        for dy, dx in directions:
-            new_row, new_col = row + dy, col + dx
-            if not is_in_grid((new_row, new_col), rows, cols):
-                continue
-            if closed_list[new_row][new_col]:
-                continue
-            movement_cost = calculate_height_cost(
-                grid[row][col],
-                grid[new_row][new_col]
-            )
-            if abs(dy) == 1 and abs(dx) == 1:
-                movement_cost *= math.sqrt(2)
-            g_new = cell_details[row][col]['g'] + movement_cost
-            h_new = calculate_h_value((new_row, new_col), dest)
-            f_new = g_new + h_new
-            if cell_details[new_row][new_col]['f'] > f_new:
-                heappush(open_list, (f_new, (new_row, new_col)))
-                cell_details[new_row][new_col] = {
-                    'g': g_new,
-                    'h': h_new,
-                    'f': f_new,
-                    'parent': (row, col)
-                }
-    return None
+    arg = a_star_1((open_list, dest, directions, rows, cols, closed_list, grid, cell_details))
+    return arg
+    # while open_list:
+    #     _, current = heappop(open_list)
+    #     row, col = current
+    #     if (row, col) == dest:
+    #         return trace_path(cell_details, dest)
+    #     closed_list[row][col] = True
+    #     for dy, dx in directions:
+    #         new_row, new_col = row + dy, col + dx
+    #         if not is_in_grid((new_row, new_col), rows, cols):
+    #             continue
+    #         if closed_list[new_row][new_col]:
+    #             continue
+    #         movement_cost = calculate_height_cost(
+    #             grid[row][col],
+    #             grid[new_row][new_col]
+    #         )
+    #         if abs(dy) == 1 and abs(dx) == 1:
+    #             movement_cost *= math.sqrt(2)
+    #         g_new = cell_details[row][col]['g'] + movement_cost
+    #         h_new = calculate_h_value((new_row, new_col), dest)
+    #         f_new = g_new + h_new
+    #         if cell_details[new_row][new_col]['f'] > f_new:
+    #             heappush(open_list, (f_new, (new_row, new_col)))
+    #             cell_details[new_row][new_col] = {
+    #                 'g': g_new,
+    #                 'h': h_new,
+    #                 'f': f_new,
+    #                 'parent': (row, col)
+    #             }
+    # return None
 if __name__ == '__main__':
     import doctest
     print(doctest.testmod())
