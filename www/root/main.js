@@ -109,3 +109,26 @@ dropArea.addEventListener('drop', (event) => {
         alert(`File ready to upload: ${draggedFile.name}`);
     }
 });
+
+// Variables to store coordinates
+let startX = null;
+let startY = null;
+let endX = null;
+let endY = null;
+
+// Function to update the coordinates
+function updateCoordinates() {
+    startX = parseFloat(document.getElementById('start-x').value) || null;
+    startY = parseFloat(document.getElementById('start-y').value) || null;
+    endX = parseFloat(document.getElementById('end-x').value) || null;
+    endY = parseFloat(document.getElementById('end-y').value) || null;
+
+    console.log("Start Coordinates:", { x: startX, y: startY });
+    console.log("End Coordinates:", { x: endX, y: endY });
+}
+
+// Add event listeners to input fields
+document.getElementById('start-x').addEventListener('input', updateCoordinates);
+document.getElementById('start-y').addEventListener('input', updateCoordinates);
+document.getElementById('end-x').addEventListener('input', updateCoordinates);
+document.getElementById('end-y').addEventListener('input', updateCoordinates);
